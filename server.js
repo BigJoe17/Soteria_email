@@ -7,12 +7,20 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://soteria.studio",
+    "https://www.soteria.studio"
+  ],
+  methods: ["POST"],
+}));
+
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
+  port: Number(process.env.EMAIL_PORT),
   secure: false, // 587 TLS
   auth: {
     user: process.env.EMAIL_USER,
@@ -28,7 +36,7 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // 🔔 1️⃣ Notify You
+    // Notify Admin
     await transporter.sendMail({
       from: `"Soteria Website" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -41,12 +49,11 @@ app.post("/api/contact", async (req, res) => {
         <p><strong>Budget:</strong> ${budget || "N/A"}</p>
         <p><strong>Timeline:</strong> ${timeline || "N/A"}</p>
         <hr/>
-        <p><strong>Message:</strong></p>
         <p>${message}</p>
       `,
     });
 
-    // 📩 2️⃣ Auto Confirmation to Client
+    // Confirmation to Client
     await transporter.sendMail({
       from: `"Soteria Studio" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -54,13 +61,10 @@ app.post("/api/contact", async (req, res) => {
       html: `
         <h2>Hi ${name},</h2>
         <p>Thank you for reaching out to Soteria Studio.</p>
-        <p>We’ve received your message and will respond within 24 hours.</p>
+        <p>We’ll respond within 24 hours.</p>
         <br/>
-        <p><strong>Your submission summary:</strong></p>
-        <p>Budget: ${budget || "Not specified"}</p>
-        <p>Timeline: ${timeline || "Not specified"}</p>
-        <br/>
-        <p>We look forward to working with you 🚀</p>
+        <p><strong>Budget:</strong> ${budget || "Not specified"}</p>
+        <p><strong>Timeline:</strong> ${timeline || "Not specified"}</p>
         <br/>
         <p>— Soteria Studio Team</p>
       `,
@@ -69,11 +73,11 @@ app.post("/api/contact", async (req, res) => {
     res.status(200).json({ message: "Message sent successfully" });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Email Error:", error);
+    res.status(500).json({ message: "Email sending failed" });
   }
 });
 
 app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+  console.log("Server running on port 5000");
 });
