@@ -28,6 +28,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+app.get("/", (req, res) => {
+  res.send("Soteria Email API Running 🚀");
+});
+
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, company, budget, message, timeline } = req.body;
