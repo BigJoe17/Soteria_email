@@ -11,12 +11,21 @@ const app = express();
    MIDDLEWARE
 ========================= */
 
-app.use(cors({
-  origin: [
-    "https://soteria.studio",
-    "https://www.soteria.studio"
-  ]
-}));
+const allowedOrigins = [
+  "http://localhost:8080",
+  "https://soteria.studio",
+  "https://www.soteria.studio"
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
 
 app.use(express.json());
 
